@@ -47,7 +47,7 @@ func New(version string) func() *schema.Provider {
 				"insecure": {
 					Type:        schema.TypeBool,
 					Optional:    true,
-					DefaultFunc: schema.EnvDefaultFunc("TF_IOSXE_PASSWORD", false),
+					DefaultFunc: schema.EnvDefaultFunc("TF_IOSXE_INSECURE", false),
 				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
