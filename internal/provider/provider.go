@@ -51,10 +51,10 @@ func New(version string) func() *schema.Provider {
 				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
-				"scaffolding_data_source": dataSourceScaffolding(),
+				"iosxe_l3vlan": dataSourceL3Vlan(),
 			},
 			ResourcesMap: map[string]*schema.Resource{
-				"scaffolding_resource": resourceScaffolding(),
+				// "iosxe_l3vlan": resourceL3Vlan(),
 			},
 		}
 
@@ -76,9 +76,10 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		password := d.Get("password").(string)
 		host := d.Get("host").(string)
 		insecure := d.Get("insecure").(bool)
-		userAgent := p.UserAgent("terraform-provider-device42", version)
+		userAgent := p.UserAgent("terraform-provider-iosxe", version)
 		var diags diag.Diagnostics
-		c := client.NewClient(host, username, password, userAgent, insecure)
+		c, err := client.NewClient(host, username, password, userAgent, insecure)
+		diags = append(diags, diag.FromErr(err)...)
 
 		return c, diags
 	}
