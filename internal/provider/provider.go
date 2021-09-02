@@ -51,10 +51,13 @@ func New(version string) func() *schema.Provider {
 				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
-				"iosxe_l3vlan": dataSourceL3Vlan(),
+				"iosxe_svi": dataSourceSVI(),
 			},
 			ResourcesMap: map[string]*schema.Resource{
-				// "iosxe_l3vlan": resourceL3Vlan(),
+				"iosxe_svi":          resourceSVI(),
+				"iosxe_vlan":         resourceVlan(),
+				"iosxe_bgp_router":   resourceBgpRouter(),
+				"iosxe_bgp_neighbor": resourceBgpNeighbor(),
 			},
 		}
 
