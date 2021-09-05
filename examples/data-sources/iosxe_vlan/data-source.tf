@@ -1,7 +1,7 @@
 data "iosxe_vlan" "example" {
-    vlanid = 666
+  vlanid = 666
 }
 
 output "debug" {
-    value = data.iosxe_vlan.example
+  value = data.iosxe_vlan.example
 }
