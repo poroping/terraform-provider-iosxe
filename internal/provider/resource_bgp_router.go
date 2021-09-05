@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -27,7 +28,7 @@ func resourceBgpRouter() *schema.Resource {
 			},
 			"as": {
 				Description: "Autonomous system number.",
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Required:    true,
 				ForceNew:    true,
 			},
@@ -37,7 +38,7 @@ func resourceBgpRouter() *schema.Resource {
 
 func resourceBgpRouterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*client.Client)
-	id := d.Get("as").(string)
+	id := d.Get("as").(int)
 
 	params := models.BgpRouter{}
 	params.Bgp.ID = id
@@ -50,14 +51,14 @@ func resourceBgpRouterCreate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.Errorf("error creating BgpRouter. %s", err)
 	}
 
-	d.SetId(id)
+	d.SetId(strconv.Itoa(id))
 
 	return resourceBgpRouterRead(ctx, d, meta)
 }
 
 func resourceBgpRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*client.Client)
-	id := d.Get("as").(string)
+	id := d.Get("as").(int)
 
 	params := models.BgpRouter{}
 	params.Bgp.ID = id
@@ -70,14 +71,14 @@ func resourceBgpRouterRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	resourceSetBgpRouter(d, resp)
 
-	d.SetId(id)
+	d.SetId(strconv.Itoa(id))
 
 	return nil
 }
 
 func resourceBgpRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*client.Client)
-	id := d.Get("as").(string)
+	id := d.Get("as").(int)
 
 	params := models.BgpRouter{}
 	params.Bgp.ID = id
@@ -90,14 +91,14 @@ func resourceBgpRouterUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.Errorf("error updating BgpRouter. %s", err)
 	}
 
-	d.SetId(id)
+	d.SetId(strconv.Itoa(id))
 
 	return resourceBgpRouterRead(ctx, d, meta)
 }
 
 func resourceBgpRouterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*client.Client)
-	id := d.Get("as").(string)
+	id := d.Get("as").(int)
 
 	params := models.BgpRouter{}
 	params.Bgp.ID = id

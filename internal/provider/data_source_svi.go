@@ -69,7 +69,7 @@ func dataSourceSVIRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 func dataSetSVI(d *schema.ResourceData, resp *models.L3Interface) {
 	d.Set("description", resp.Description)
-	d.Set("name", strconv.Itoa(resp.Name))
+	d.Set("name", resp.Name)
 	d.Set("vlanid", resp.Name)
 	d.Set("shutdown", resp.Shutdown)
 	resp.IP.Address.Primary.SetCIDR()
