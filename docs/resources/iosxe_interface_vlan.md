@@ -1,18 +1,18 @@
 ---
-page_title: "iosxe_svi Resource - terraform-provider-iosxe"
+page_title: "iosxe_interface_vlan Resource - terraform-provider-iosxe"
 subcategory: ""
 description: |-
-  Manage a SVI.
+  Manage a L3 VLAN interface.
 ---
 
-# Resource `iosxe_svi`
+# Resource `iosxe_interface_vlan`
 
-Manage a SVI.
+Manage a L3 VLAN interface.
 
 ## Example Usage
 
 ```terraform
-resource "iosxe_svi" "example" {
+resource "iosxe_interface_vlan" "example" {
   vlanid      = 666
   description = "totallyterraformed"
   ip          = "192.168.66.6/24"
@@ -24,7 +24,7 @@ resource "iosxe_svi" "example" {
 }
 
 output "debug" {
-  value = iosxe_svi.example
+  value = iosxe_interface_vlan.example
 }
 ```
 

@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/poroping/go-ios-xe-sdk/client"
 	"github.com/poroping/go-ios-xe-sdk/models"
 )
 
@@ -37,7 +36,7 @@ func resourceBgpRouter() *schema.Resource {
 }
 
 func resourceBgpRouterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*client.Client)
+	client := meta.(*apiClient).Client
 	id := d.Get("as").(int)
 
 	params := models.BgpRouter{}
@@ -57,7 +56,7 @@ func resourceBgpRouterCreate(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func resourceBgpRouterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*client.Client)
+	client := meta.(*apiClient).Client
 	id := d.Get("as").(int)
 
 	params := models.BgpRouter{}
@@ -77,7 +76,7 @@ func resourceBgpRouterRead(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 func resourceBgpRouterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*client.Client)
+	client := meta.(*apiClient).Client
 	id := d.Get("as").(int)
 
 	params := models.BgpRouter{}
@@ -97,7 +96,7 @@ func resourceBgpRouterUpdate(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func resourceBgpRouterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*client.Client)
+	client := meta.(*apiClient).Client
 	id := d.Get("as").(int)
 
 	params := models.BgpRouter{}

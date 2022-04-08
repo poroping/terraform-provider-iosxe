@@ -9,10 +9,10 @@ resource "iosxe_bgp_neighbor" "example" {
   remote_as         = 8899
   default_originate = true
 
-  prefix_list {
-    name      = "pl_test"
-    direction = "in"
-  }
+  # prefix_list {
+  #   name      = "pl_test"
+  #   direction = "in"
+  # }
 }
 
 output "debug" {

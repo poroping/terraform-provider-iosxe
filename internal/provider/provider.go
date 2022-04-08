@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/poroping/go-ios-xe-sdk/client"
+	"github.com/poroping/go-ios-xe-sdk/config"
 )
 
 func init() {
@@ -51,13 +52,17 @@ func New(version string) func() *schema.Provider {
 				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
-				"iosxe_svi": dataSourceSVI(),
+				// "iosxe_interface_vlan": dataSourceVlan(),
 			},
 			ResourcesMap: map[string]*schema.Resource{
-				"iosxe_svi":          resourceSVI(),
-				"iosxe_vlan":         resourceVlan(),
+				"iosxe_interface_port_channel":              resourcePortChannel(),
+				"iosxe_interface_port_channel_subinterface": resourcePortChannelSubinterface(),
+				"iosxe_interface_vlan":                      resourceVlan(),
+				// "iosxe_l3_interface":                        resourceL3Interface(),
+				"iosxe_l2_vlan":      resourceL2Vlan(),
 				"iosxe_bgp_router":   resourceBgpRouter(),
 				"iosxe_bgp_neighbor": resourceBgpNeighbor(),
+				"iosxe_vrf":          resourceVRF(),
 			},
 		}
 
@@ -67,11 +72,12 @@ func New(version string) func() *schema.Provider {
 	}
 }
 
-// type apiClient struct {
-// 	// Add whatever fields, client or connection info, etc. here
-// 	// you would need to setup to communicate with the upstream
-// 	// API.
-// }
+type apiClient struct {
+	Client *client.CiscoIOSXEClient
+	// Add whatever fields, client or connection info, etc. here
+	// you would need to setup to communicate with the upstream
+	// API.
+}
 
 func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
@@ -81,9 +87,19 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		insecure := d.Get("insecure").(bool)
 		userAgent := p.UserAgent("terraform-provider-iosxe", version)
 		var diags diag.Diagnostics
-		c, err := client.NewClient(host, username, password, userAgent, insecure)
+		cfg := config.Config{
+			Username:  username,
+			Password:  password,
+			Host:      host,
+			Insecure:  insecure,
+			UserAgent: userAgent,
+		}
+		c, err := client.NewClient(cfg)
 		diags = append(diags, diag.FromErr(err)...)
+		apiClient := &apiClient{
+			Client: c,
+		}
 
-		return c, diags
+		return apiClient, diags
 	}
 }

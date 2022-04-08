@@ -7,13 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/poroping/go-ios-xe-sdk/client"
 	"github.com/poroping/go-ios-xe-sdk/models"
 )
 
 func resourceBgpNeighbor() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manage a L2 VLAN.",
+		Description: "Manage a BGP neighbor.",
 
 		CreateContext: resourceBgpNeighborCreate,
 		ReadContext:   resourceBgpNeighborRead,
@@ -21,6 +20,12 @@ func resourceBgpNeighbor() *schema.Resource {
 		DeleteContext: resourceBgpNeighborDelete,
 
 		Schema: map[string]*schema.Schema{
+			"activate": {
+				Description: "Activate BGP neighbor.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+			},
 			"as": {
 				Description: "Autonomous system number.",
 				Type:        schema.TypeInt,
@@ -154,18 +159,19 @@ func resourceBgpNeighbor() *schema.Resource {
 }
 
 func resourceBgpNeighborCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*client.Client)
+	client := meta.(*apiClient).Client
 	id := d.Get("ip").(string)
 
 	as := d.Get("as").(int)
 
 	neighbor := models.BgpNeighbor{}
 	neighbor.Neighbor.ID = id
+	neighbor.Neighbor.ASN = as
 
 	// create neighbor
 	getCreateUpdateBgpNeighborObject(d, &neighbor)
 
-	err := client.CreateBgpNeighbor(as, neighbor)
+	err := client.CreateBgpNeighbor(neighbor)
 
 	if err != nil {
 		return diag.Errorf("error creating BgpNeighbor. %s", err)
@@ -174,9 +180,11 @@ func resourceBgpNeighborCreate(ctx context.Context, d *schema.ResourceData, meta
 	// create neighbor config
 	neighborConf := models.BgpNeighborConfig{}
 	neighborConf.NeighborConfig.ID = id
+	neighborConf.NeighborConfig.ASN = as
+	neighborConf.NeighborConfig.AddressFamilyType = "ipv4"
 	getCreateUpdateBgpNeighborConfigObject(d, &neighborConf)
 
-	err = client.CreateBgpNeighborConfig(as, neighborConf)
+	err = client.CreateBgpNeighborConfig(neighborConf)
 
 	if err != nil {
 		return diag.Errorf("error creating BgpNeighborConfig. %s", err)
@@ -188,16 +196,17 @@ func resourceBgpNeighborCreate(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceBgpNeighborRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*client.Client)
+	client := meta.(*apiClient).Client
 	id := d.Get("ip").(string)
 
 	as := d.Get("as").(int)
 
 	neighbor := models.BgpNeighbor{}
 	neighbor.Neighbor.ID = id
+	neighbor.Neighbor.ASN = as
 
 	// read neighbor
-	resp, err := client.ReadBgpNeighbor(as, neighbor)
+	resp, err := client.ReadBgpNeighbor(neighbor)
 
 	if err != nil {
 		return diag.Errorf("error retrieving BgpNeighbor. %s", err)
@@ -208,15 +217,15 @@ func resourceBgpNeighborRead(ctx context.Context, d *schema.ResourceData, meta i
 	// read neighbor config
 	neighborConf := models.BgpNeighborConfig{}
 	neighborConf.NeighborConfig.ID = id
+	neighborConf.NeighborConfig.ASN = as
+	neighborConf.NeighborConfig.AddressFamilyType = "ipv4"
 	// getCreateUpdateBgpNeighborConfigObject(d, &neighborConf)
 
-	resp2, err := client.ReadBgpNeighborConfig(as, neighborConf)
+	resp2, err := client.ReadBgpNeighborConfig(neighborConf)
 
 	if err != nil {
 		return diag.Errorf("error retrieving BgpNeighborConfig. %s", err)
 	}
-
-	// todo: handle 404s
 
 	resourceSetBgpNeighborConfig(d, resp2)
 
@@ -226,18 +235,19 @@ func resourceBgpNeighborRead(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func resourceBgpNeighborUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*client.Client)
+	client := meta.(*apiClient).Client
 	id := d.Get("ip").(string)
 
 	as := d.Get("as").(int)
 
 	neighbor := models.BgpNeighbor{}
 	neighbor.Neighbor.ID = id
+	neighbor.Neighbor.ASN = as
 
 	// update neighbor
 	getCreateUpdateBgpNeighborObject(d, &neighbor)
 
-	err := client.CreateBgpNeighbor(as, neighbor)
+	err := client.CreateBgpNeighbor(neighbor)
 
 	if err != nil {
 		return diag.Errorf("error updating BgpNeighbor. %s", err)
@@ -246,10 +256,13 @@ func resourceBgpNeighborUpdate(ctx context.Context, d *schema.ResourceData, meta
 	// update neighbor config
 	neighborConf := models.BgpNeighborConfig{}
 	neighborConf.NeighborConfig.ID = id
+	neighborConf.NeighborConfig.ASN = as
+	neighborConf.NeighborConfig.AddressFamilyType = "ipv4"
+
 	getCreateUpdateBgpNeighborConfigObject(d, &neighborConf)
 
 	// err = client.UpdateBgpNeighborConfig(as, neighborConf)
-	err = client.CreateBgpNeighborConfig(as, neighborConf)
+	err = client.CreateBgpNeighborConfig(neighborConf)
 
 	if err != nil {
 		return diag.Errorf("error updating BgpNeighborConfig. %s", err)
@@ -261,16 +274,17 @@ func resourceBgpNeighborUpdate(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceBgpNeighborDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*client.Client)
+	client := meta.(*apiClient).Client
 	id := d.Get("ip").(string)
 
 	as := d.Get("as").(int)
 
 	neighbor := models.BgpNeighbor{}
 	neighbor.Neighbor.ID = id
+	neighbor.Neighbor.ASN = as
 
 	// delete neighbor (we can just remove parent here it will remove all child config)
-	err := client.DeleteBgpNeighbor(as, neighbor)
+	err := client.DeleteBgpNeighbor(neighbor)
 
 	if err != nil {
 		return diag.Errorf("error deleting BgpNeighbor. %s", err)
@@ -310,6 +324,11 @@ func resourceSetBgpNeighbor(d *schema.ResourceData, resp *models.BgpNeighbor) {
 }
 
 func resourceSetBgpNeighborConfig(d *schema.ResourceData, resp *models.BgpNeighborConfig) {
+	if resp.NeighborConfig.Activate != nil {
+		d.Set("activate", true)
+	} else {
+		d.Set("activate", false)
+	}
 	if resp.NeighborConfig.DefaultOriginate != nil {
 		d.Set("default_originate", true)
 	} else {
@@ -385,7 +404,7 @@ func getCreateUpdateBgpNeighborObject(d *schema.ResourceData, m *models.BgpNeigh
 	}
 	if v, ok := d.GetOk("remote_as"); ok {
 		if i, ok := v.(int); ok {
-			m.Neighbor.RemoteAs = i
+			m.Neighbor.RemoteAs = &i
 		}
 	}
 	if v, ok := d.GetOk("shutdown"); ok {
@@ -408,6 +427,14 @@ func getCreateUpdateBgpNeighborObject(d *schema.ResourceData, m *models.BgpNeigh
 }
 
 func getCreateUpdateBgpNeighborConfigObject(d *schema.ResourceData, m *models.BgpNeighborConfig) *models.BgpNeighborConfig {
+	if v, ok := d.GetOk("activate"); ok {
+		if b, ok := v.(bool); ok {
+			if b {
+				n := models.CiscoEnabled
+				m.NeighborConfig.Activate = &n
+			}
+		}
+	}
 	if v, ok := d.GetOk("default_originate"); ok {
 		if b, ok := v.(bool); ok {
 			if b {
